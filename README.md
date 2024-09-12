@@ -21,9 +21,10 @@ Additionally, you need to have **Anaconda 3** or a higher version of conda insta
 
 To get started with the environment setup, follow the instructions:
 
-1. Open a shell-based terminal (or command prompt) and run the following commands to create and activate a new Anaconda environment:
+1. Open a shell-based terminal (or command prompt). Clone this repository and run the following commands to create and activate a new Anaconda environment:
 
    ```bash
+   git clone https://github.com/skywalker-lt/3D-Quantile-Regression-with-elliptical-approximation.git
    conda env create -n 3D_QuantileReg
    conda activate 3D_QuantileReg
    ```
