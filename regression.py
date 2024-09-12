@@ -10,7 +10,11 @@ from sympy import symbols, Eq, solve
 import yaml  # For loading the YAML configuration
 
 # Load the YAML config file
-with open("config.yaml", 'r') as stream:
+parser = argparse.ArgumentParser(description='3D Quantile Regression')
+parser.add_argument('--config', type=str, default='config.yaml', help='Path to the YAML configuration file')
+args = parser.parse_args()
+
+with open(args.config, 'r') as stream:
     config = yaml.safe_load(stream)
 
 # Extract hyperparameters from YAML config file
