@@ -52,4 +52,7 @@ If your are using your own datase, run
    ```
 ## References:
 
-Additional references and datasets used in the essay can be found in the bibliography of the original work. Thank you!
+Thanks for the data sourced from Plotly datasets:
+https://github.com/plotly/datasets
+
+Additional references and other datasets used in the essay can be found in the bibliography of the original work. Thank you!
