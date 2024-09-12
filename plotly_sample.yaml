@@ -4,7 +4,7 @@ quantiles:
   - 0.25
   - 0.75
 
-data_input: "3d-line1.csv" 
+data_input: "samples/3d-line1.csv" 
 
 columns:
   IV: "x"
