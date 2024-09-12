@@ -1,0 +1,28 @@
+# YAML file for hyperparameter configuration
+
+# Conditiona quantile (lower and upper boundaries)
+quantiles: 
+  - 0.25
+  - 0.75
+
+# Data source
+data_input: "Your_Dataset.csv"  # Path to the CSV file
+
+# Column headers of the 3 variables in your dataset CSV file
+columns:
+  IV: "Your IV"
+  DV1: "Your DV"
+  DV2: "Your DV"
+
+# Subset
+n_segments: 6  # Number of subsets to segment the dataset into
+
+# Ellipse
+ellipse:
+  color: 'purple'
+  opacity: 0.3
+
+# Mesh
+mesh:
+  color: 'blue'
+  opacity: 0.1

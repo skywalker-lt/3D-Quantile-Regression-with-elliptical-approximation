@@ -1,0 +1,22 @@
+# YAML file for hyperparameter configuration
+
+quantiles: 
+  - 0.25
+  - 0.75
+
+data_input: "3d-line1.csv" 
+
+columns:
+  IV: "x"
+  DV1: "y"
+  DV2: "z"
+
+n_segments: 6 
+
+ellipse:
+  color: 'purple'
+  opacity: 0.3
+
+mesh:
+  color: 'blue'
+  opacity: 0.1
