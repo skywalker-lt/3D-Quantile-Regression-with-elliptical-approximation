@@ -10,7 +10,7 @@ from sympy import symbols, Eq, solve
 import yaml  # For loading the YAML configuration
 
 # Load the YAML config file
-with open("3d-line1.yaml", 'r') as stream:
+with open("config.yaml", 'r') as stream:
     config = yaml.safe_load(stream)
 
 # Extract hyperparameters from YAML config file
@@ -88,66 +88,65 @@ def fit_ellipse(subset, x_plane):
     # Translate the points to the origin
     translated_points = intersection_points - centroid
 
-    # Perform SVD to obtain major and minor axes for the ellipse
+    # Perform SVD to the major and minor radius and the rotation matrix
     U, S, Vt = np.linalg.svd(translated_points)
 
-    *************
-
-    major_radius = S[0] * 0.75   # Major axis
-    minor_radius = S[1] * 0.75   # Minor axis
+    major_radius = S[0]  # Major radius from the s11 element of the singlar matrix
+    minor_radius = S[1]  # Minor radius from the s22 element of the singlar matrix
 
     # Generate points for the ellipse
     theta = np.linspace(0, 2 * np.pi, 100)
     ellipse_points = np.column_stack((major_radius * np.cos(theta), minor_radius * np.sin(theta)))
 
-    # Rotate and translate the ellipse
+    # Rotate the ellipse with the rotation matrix V_transpose and translate the ellipse back
     ellipse_rotated = ellipse_points @ Vt
     ellipse_rotated += centroid
 
-    # Project the ellipse to the yz-plane at the given x_plane
+    # Project the ellipse to the yz-plane placed the given x vlaue
     ellipse_3d = np.vstack([np.full(ellipse_rotated.shape[0], x_plane), ellipse_rotated.T]).T
 
     return ellipse_3d
 
-# --------------------------
-# Segment the dataset into parts along the x-axis (Time)
-# --------------------------
+# ------------------
+# Dataset processing
+# ------------------
 
 time_segments = np.linspace(data[IV].min(), data[IV].max(), n_segments + 1)
 ellipses = []
 
 # Fit an ellipse for each segment
 for i in range(n_segments):
-    # Subset the data for the current segment
+    
+    # Define the subset
     subset = data[(data[IV] >= time_segments[i]) & (data[IV] < time_segments[i + 1])]
     
-    # Calculate the midpoint of the segment
+    # midpoint of the subset's x-interval
     x_plane = (time_segments[i] + time_segments[i + 1]) / 2
     
-    # Fit the ellipse for the subset and place it at the midpoint
+    # Fit the ellipse for each subset and place it at the x-interval midpoint
     ellipse_3d = fit_ellipse(subset, x_plane)
     ellipses.append(ellipse_3d)
 
-# --------------------------
-# Plot the original data, ellipses, and the connecting mesh layers
-# --------------------------
+# ---------------------
+# Plot all the elements
+# ---------------------
 
 fig = go.Figure()
 
-# Plot original data points with smaller dots
+# Plot the original scatter plots
 fig.add_trace(go.Scatter3d(
     x=data[IV], y=data[DV1], z=data[DV2], 
     mode='markers', marker=dict(size=2, color='black'), name='Data points'
 ))
 
-# Plot the ellipses as filled surfaces using triangulated mesh
+# Plot the ellipses as a filled surface using triangulated mesh
 for i in range(n_segments):
     ellipse = ellipses[i]
     x_vals = ellipse[:, 0]
     y_vals = ellipse[:, 1]
     z_vals = ellipse[:, 2]
 
-    # Triangulate the ellipse (create faces for a filled surface)
+    # Triangulate the ellipse
     n_points = len(x_vals)
     faces = [[j, (j + 1) % n_points, 0] for j in range(1, n_points)]  # Triangulation
 
@@ -155,7 +154,7 @@ for i in range(n_segments):
     j_vals = [f[1] for f in faces]
     k_vals = [f[2] for f in faces]
 
-    # Plot the ellipse as a filled mesh
+    # Plot the ellipse
     fig.add_trace(go.Mesh3d(
         x=x_vals,
         y=y_vals,
@@ -173,12 +172,12 @@ for i in range(n_segments - 1):
     ellipse_1 = ellipses[i]
     ellipse_2 = ellipses[i + 1]
 
-    # Vertices of the two ellipses
+    # Vertices of the ellipses
     vertices_x = np.concatenate([ellipse_1[:, 0], ellipse_2[:, 0]])
     vertices_y = np.concatenate([ellipse_1[:, 1], ellipse_2[:, 1]])
     vertices_z = np.concatenate([ellipse_1[:, 2], ellipse_2[:, 2]])
 
-    # Define triangles to connect corresponding points between the two ellipses
+    # Define triangles to connect two consecutive ellipses
     faces = []
     n_points = len(ellipse_1)
     for j in range(n_points - 1):
@@ -187,7 +186,7 @@ for i in range(n_segments - 1):
 
     faces = np.array(faces)
 
-    # Plot the connecting mesh with blue color and 20% opacity
+    # Plot the mesh with the color and opacity defined in the yaml file
     fig.add_trace(go.Mesh3d(
         x=vertices_x, 
         y=vertices_y, 
@@ -195,8 +194,8 @@ for i in range(n_segments - 1):
         i=faces[:, 0],
         j=faces[:, 1],
         k=faces[:, 2],
-        color=mesh_color,  # Fixed color for the mesh
-        opacity=mesh_opacity,  # 20% opacity
+        color=mesh_color,  # color
+        opacity=mesh_opacity,  # opacity
         name=f'Mesh Layer {i+1}'
     ))
 
@@ -207,5 +206,5 @@ fig.update_layout(scene=dict(
                     zaxis_title='Dependent Variable 2 (Z)'),
                   title="3D Scatter Plot with 20 Connected Ellipses (Filled Purple and Blue Mesh)")
 
-# Show the plot
+# Display the plot
 fig.show()
