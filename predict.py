@@ -1,4 +1,5 @@
 # pip3/conda install numpy pandas plotly statsmodels sympy pyyaml
+# this is a plotly implementation of extended quantile regression for 3D scatter plot modeling
 
 import numpy as np
 import pandas as pd
@@ -12,7 +13,7 @@ import yaml  # For loading the YAML configuration
 with open("3d-line1.yaml", 'r') as stream:
     config = yaml.safe_load(stream)
 
-# Extract hyperparameters from config
+# Extract hyperparameters from YAML config file
 quantiles = config['quantiles']
 data_input = config['data_input']
 n_segments = config['n_segments']
@@ -21,43 +22,43 @@ ellipse_opacity = config['ellipse']['opacity']
 mesh_color = config['mesh']['color']
 mesh_opacity = config['mesh']['opacity']
 
-# Extract column names from config
-IV = config['columns']['IV']
-DV1 = config['columns']['DV1']
-DV2 = config['columns']['DV2']
+# Extract column names
+IV = config['columns']['IV'] # independent Variable (x-axis)
+DV1 = config['columns']['DV1'] # Dependent Variable 1 (y-axis)
+DV2 = config['columns']['DV2'] # Dependent Variable 2 (z-axis)
 
-# Load the dataset from the CSV file specified in the config
+# Load the scatter plot data from the CSV file
 data = pd.read_csv(data_input, encoding='UTF-8')
 
-# Check if the specified columns exist in the CSV file
+# Check if the columns exist in the CSV file
 if not {IV, DV1, DV2}.issubset(data.columns):
-    raise IndexError(f"The specified columns ({IV}, {DV1}, {DV2}) do not exist in the CSV file.")
+    raise ValueError(f"The specified columns ({IV}, {DV1}, {DV2}) do not exist in the CSV file.")
 
-# --------------------------
-# Function to fit the ellipse using quantile regression
-# --------------------------
+# --------------------------------------
+# Elliptical Cross-section Approximation
+# --------------------------------------
 
 def fit_ellipse(subset, x_plane):
-    # Perform quantile regression on the original dataset (Concentration vs Wavelength)
+    # linear quantile regression on the scatter plot projected onto the yz-plane (DV2 againsrt DV1)
     mod = QuantReg(subset[DV2], sm.add_constant(subset[DV1]))
     quantile_models = [mod.fit(q=q) for q in quantiles]
 
-    # Perform quantile regression on transposed data (Wavelength vs Concentration)
+    # linear quantile regression on the scatter plot projected onto the transposed zy-plane (DV1 vs DV2)
     mod_transposed = QuantReg(subset[DV1], sm.add_constant(subset[DV2]))
     quantile_models_transposed = [mod_transposed.fit(q=q) for q in quantiles]
 
-    # Define symbolic variables for solving the intersections
+    # Define variables for solving the the intersection points
     y_sym, z_sym = symbols('y z')
 
-    # Define the regression lines based on quantile regression results (original dataset)
+    # The quantile boundaries generated on the original plane
     eq1 = Eq(z_sym, quantile_models[0].params['const'] + quantile_models[0].params[DV1] * y_sym)
     eq2 = Eq(z_sym, quantile_models[1].params['const'] + quantile_models[1].params[DV1] * y_sym)
 
-    # Define the regression lines based on quantile regression results (transposed dataset)
+    # The quantile boundaries generated on the transposed plane
     eq3 = Eq(y_sym, quantile_models_transposed[0].params['const'] + quantile_models_transposed[0].params[DV2] * z_sym)
     eq4 = Eq(y_sym, quantile_models_transposed[1].params['const'] + quantile_models_transposed[1].params[DV2] * z_sym)
 
-    # Solve for four intersection points between quantile regression boundaries
+    # solve for four intersection points
     intersection_points_1 = solve((eq1, eq3), (y_sym, z_sym))  # Intersection 1
     intersection_points_2 = solve((eq1, eq4), (y_sym, z_sym))  # Intersection 2
     intersection_points_3 = solve((eq2, eq3), (y_sym, z_sym))  # Intersection 3
@@ -69,7 +70,7 @@ def fit_ellipse(subset, x_plane):
     y_intersect_3, z_intersect_3 = float(intersection_points_3[y_sym]), float(intersection_points_3[z_sym])
     y_intersect_4, z_intersect_4 = float(intersection_points_4[y_sym]), float(intersection_points_4[z_sym])
 
-    # Collect the four intersection points
+    # Collect the intersections into an array (matrix mathematically) 
     intersection_points = np.array([
         [y_intersect_1, z_intersect_1],
         [y_intersect_2, z_intersect_2],
@@ -77,18 +78,20 @@ def fit_ellipse(subset, x_plane):
         [y_intersect_4, z_intersect_4]
     ])
 
-    # --------------------------
-    # SVD for Ellipse Fitting
-    # --------------------------
+    # ---------------------------------------------------
+    # Ellipse generation via Singular Value Decomposition
+    # ---------------------------------------------------
 
-    # Calculate the centroid (mean of the points)
+    # Deduce the centroid of the points
     centroid = np.mean(intersection_points, axis=0)
 
-    # Translate the points to the centroid
+    # Translate the points to the origin
     translated_points = intersection_points - centroid
 
     # Perform SVD to obtain major and minor axes for the ellipse
     U, S, Vt = np.linalg.svd(translated_points)
+
+    *************
 
     major_radius = S[0] * 0.75   # Major axis
     minor_radius = S[1] * 0.75   # Minor axis
