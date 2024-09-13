@@ -2,7 +2,7 @@
 
 ## Description
 
-This repository provides a Plotly-based implementation of a **3D-extended quantile regression model**. For detailed explanation of the methodology, please refer to **Section 2 ~ 4** in the original essay. The code enables examinars to reproduce and validate the sample calculation presented in **Section 4** of the essay.
+This repository provides a Plotly-based implementation of a **3D-extended quantile regression model**. For detailed explanation of the methodology, please refer to **Section 2 ~ 7** in the original essay. The code enables examinars to reproduce and validate the sample calculation presented in **Section 4** of the essay.
 
 <img width="899" alt="Screenshot 2024-09-12 at 20 25 49" src="https://github.com/user-attachments/assets/08a1eea5-4891-4f6d-96b2-899793713178">
 
