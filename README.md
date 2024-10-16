@@ -35,10 +35,10 @@ To get started with the environment setup, follow the instructions:
    ```
 3. Prepare your data:
 
-   In the file ```yourdataset.yaml```, replace **Your_Dataset.csv** with the path or filename of your dataset (**Your dataset must be in .csv format, otherwise the system will raise an error**).
-   Also change the variable names in the config.yaml file to match the column headers in your dataset for the three variables (e.g., time, concentration, and wavelength).
+   In the file ```yourdataset.yaml```, replace **Your_Dataset.csv** with the path or filename of your dataset (**Your dataset must be in .csv format, otherwise the program will raise an error**).
+   Also change the variable names in the ```config.yaml``` file to match the column headers in your dataset for the three variables (e.g., time, concentration, and wavelength).
 
-## Perform Regression
+## Evaluate
 
 To perform regression on the sample data (same as the one used for sample calculation in the essay), you can simply run the following command in your terminal:
 
