@@ -11,9 +11,9 @@ This repository provides a Plotly-based implementation of a **3D-extended quanti
 
 To run the code and reproduce the results, your device needs to satisfy the following requirements:
 
-- **Mac**: MacOS 12 or higher
-- **Windows**: Windows10 or higher
-- **Linux**: Ubuntu 18.04 or higher
+- **Mac**: ≥ MacOS 12
+- **Windows**: ≥ Windows10
+- **Linux**: ≥ Ubuntu 18.04
 
 Additionally, you need to have **Anaconda 3** or a higher version of conda installed.
 
