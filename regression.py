@@ -1,5 +1,5 @@
-# pip3/conda install numpy pandas plotly statsmodels sympy pyyaml
-# this is a plotly implementation of extended quantile regression for 3D scatter plot modeling
+# a plotly implementation of extended quantile regression for 3D scatter plot modeling
+# copyright©skywalker-lt
 
 import numpy as np
 import pandas as pd
@@ -38,10 +38,8 @@ data = pd.read_csv(data_input, encoding='UTF-8')
 if not {IV, DV1, DV2}.issubset(data.columns):
     raise ValueError(f"The specified columns ({IV}, {DV1}, {DV2}) do not exist in the CSV file.")
 
-# --------------------------------------
-# Elliptical Cross-section Approximation
-# --------------------------------------
 
+# Elliptical Cross-section Approximation
 def fit_ellipse(subset, x_plane):
     # linear quantile regression on the scatter plot projected onto the yz-plane (DV2 againsrt DV1)
     mod = QuantReg(subset[DV2], sm.add_constant(subset[DV1]))
@@ -82,17 +80,15 @@ def fit_ellipse(subset, x_plane):
         [y_intersect_4, z_intersect_4]
     ])
 
-    # ---------------------------------------------------
-    # Ellipse generation via Singular Value Decomposition
-    # ---------------------------------------------------
-
+    # Ellipse composing via SVD
     # Deduce the centroid of the points
+    
     centroid = np.mean(intersection_points, axis=0)
 
-    # Translate the points to the origin
+    # Translate the points back to the origin
     translated_points = intersection_points - centroid
 
-    # Perform SVD to the major and minor radius and the rotation matrix
+    # Perform SVD to the major and minor radius and then the rotation matrix
     U, S, Vt = np.linalg.svd(translated_points)
 
     major_radius = S[0]  # Major radius from the s11 element of the singlar matrix
@@ -111,9 +107,7 @@ def fit_ellipse(subset, x_plane):
 
     return ellipse_3d
 
-# ------------------
 # Dataset processing
-# ------------------
 
 time_segments = np.linspace(data[IV].min(), data[IV].max(), n_segments + 1)
 ellipses = []
@@ -131,10 +125,7 @@ for i in range(n_segments):
     ellipse_3d = fit_ellipse(subset, x_plane)
     ellipses.append(ellipse_3d)
 
-# ---------------------
 # Plot all the elements
-# ---------------------
-
 fig = go.Figure()
 
 # Plot the original scatter plots
@@ -143,7 +134,7 @@ fig.add_trace(go.Scatter3d(
     mode='markers', marker=dict(size=2, color='black'), name='Data points'
 ))
 
-# Plot the ellipses as a filled surface using triangulated mesh
+# Plot the ellipses as a filled surface using triangulated meshes
 for i in range(n_segments):
     ellipse = ellipses[i]
     x_vals = ellipse[:, 0]
@@ -152,7 +143,7 @@ for i in range(n_segments):
 
     # Triangulate the ellipse
     n_points = len(x_vals)
-    faces = [[j, (j + 1) % n_points, 0] for j in range(1, n_points)]  # Triangulation
+    faces = [[j, (j + 1) % n_points, 0] for j in range(1, n_points)]  # triangulation
 
     i_vals = [f[0] for f in faces]
     j_vals = [f[1] for f in faces]
@@ -171,7 +162,7 @@ for i in range(n_segments):
         name=f'Ellipse {i+1}'
     ))
 
-# Plot the mesh connecting consecutive ellipses
+# Plot the mesh connecting adjacent ellipses
 for i in range(n_segments - 1):
     ellipse_1 = ellipses[i]
     ellipse_2 = ellipses[i + 1]
@@ -190,7 +181,7 @@ for i in range(n_segments - 1):
 
     faces = np.array(faces)
 
-    # Plot the mesh with the color and opacity defined in the yaml file
+    # Plot the mesh with the color and opacity from the yaml config file.
     fig.add_trace(go.Mesh3d(
         x=vertices_x, 
         y=vertices_y, 
@@ -203,12 +194,11 @@ for i in range(n_segments - 1):
         name=f'Mesh Layer {i+1}'
     ))
 
-# Update the layout
+# update and display the plot
 fig.update_layout(scene=dict(
                     xaxis_title='Independent Variable (X)',
                     yaxis_title='Dependent Variable 1 (Y)',
                     zaxis_title='Dependent Variable 2 (Z)'),
                   title="3D Scatter Plot with 20 Connected Ellipses (Filled Purple and Blue Mesh)")
 
-# Display the plot
 fig.show()
