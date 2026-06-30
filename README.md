@@ -1,4 +1,4 @@
-# The Plotly Implementation of 3D-Extended Quantile Regression Model Proposed in a Math AAHL Extended Essay
+# The Plotly implementation of 3D-Extended Quantile Regression Model Proposed in an IB Math AAHL Extended Essay. For demonstration purposes only!
 
 ## Description
 
